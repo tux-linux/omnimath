@@ -11,7 +11,13 @@
 #define F_R_VALEUR_ABSOLUE_2POINTS_ORD_POINT 2
 #define F_R_VALEUR_ABSOLUE_3POINTS 3
 
+// Options "Exponentielle : options pour trouver la règle"
+#define F_R_EXPO_ORD_POINT 1
+
 int main() {
+    if(std::getenv("DEBUG") != NULL) {
+        debug = true;
+    };
     std::list<std::string> options = { "Trouver la règle d'une fonction", "" };
     int option = imprimerOptions(options);
     if(option == TROUVER_REGLE_FONCTION) {
@@ -209,53 +215,61 @@ std::string TRFVA() {
             }
         }
 
-        /*
+        if(debug) {
+            std::cout << std::endl;
+            log("Liste des x:");
             for(int i = 0; i <= list_x.size(); i++) {
-                std::cout << list_x[i] << " ";
+                    std::cout << list_x[i] << ", ";
             }
             std::cout << std::endl;
+            log("Liste des y:");
             for(int i = 0; i <= list_y.size(); i++) {
-                std::cout << list_y[i] << " ";
+                std::cout << list_y[i] << ", ";
             }
-            std::cout << std::endl;
-        */
+            std::cout << std::endl << std::endl;
+        }
 
         // y
         ex_y_1 = list_y[0];
         e_y_1 = list_y[1];
         ex_y_2 = list_y[2];
 
+        log("Extrême 1: (" + std::to_string(ex_x_1) + ", " + std::to_string(ex_y_1) + ")");
+        log("Point quelconque: (" + std::to_string(e_x_1) + ", " + std::to_string(e_y_1) + ")");
+        log("Extrême 2: (" + std::to_string(ex_x_2) + ", " + std::to_string(ex_y_2) + ")");
+
         // Le point quelconque entre les deux extrêmes est-il plus proche de l'extrême 1 ou de l'extrême 2 ?
         if(abs(e_x_1 - ex_x_1) < abs(e_x_1 - ex_x_2)) {
-            // Le point est plus proche de l'extrême 1
+            log("Le point quelconque est plus proche de l'extrême 1");
             if(ex_y_1 > e_y_1) {
-                // La droite descend
+                log("La droite descend");
                 a = (ex_y_1 - e_y_1)/(ex_x_1 - e_x_1);
             }
             else {
-                // La droite monte
+                log("La droite monte");
                 a = (e_y_1 - ex_y_1)/(e_x_1 - ex_x_1);
             }
             // Paramètre 'b' des deux droites
-            // b = -a * -x + y
-            b_1 = a * e_x_1 - e_y_1;
+            b_1 = -(a * e_x_1 - e_y_1);
             b_2 = (-a * -ex_x_2) + ex_y_2;
         }
         else {
             // Le point est plus proche de l'extrême 2
+            log("Le point quelconque est plus proche de l'extrême 2");
             if(ex_y_2 > e_y_1) {
-                // La droite descend
+                log("La droite descend");
                 a = (ex_y_2 - e_y_1)/(ex_x_2 - e_x_1);
             }
             else {
-                // La droite monte
+                log("La droite monte");
                 a = (e_y_1 - ex_y_2)/(e_x_1 - ex_x_2);
             }
             // Paramètre 'b' des deux droites
-            // b = -a * -x + y
-            b_1 = a * e_x_1 - ex_y_2;
+            b_1 = -(a * e_x_1 - ex_y_2);
             b_2 = (-a * -ex_x_1) + ex_y_1;
         }
+        log("a préliminaire est " + std::to_string(a));
+        log("b_1 est " + std::to_string(b_1) + " et b_2 est " + std::to_string(b_2));
 
         /*
             y_1 = y_2
@@ -270,26 +284,38 @@ std::string TRFVA() {
         */
         // L'intersection des deux règles représente le paramètre 'h' de la fonction valeur absolue.
         h = (b_2 - b_1)/((a) - (-a));
+        log("h est " + std::to_string(h));
 
         // Paramètre 'k'. Pour un 'x' de 'h', à quelle position en 'y' nous trouvons-nous ?
         // Note : ceci devrait donner le même résultat si la variable b_2 était utilisée.
         k = a * h + b_1;
+        log("k est " + std::to_string(k));
 
         // Signe de la pente de la fonction valeur absolue
         float staging_a = abs(a);
-        std::cout << staging_a;
-        if(e_x_1 < h) {
-            if(e_y_1 > ex_y_1) {
-                // Le point quelconque est plus bas que l'extrême 1
-                a = -staging_a;
+        /*
+            std::cout << staging_a;
+            if(e_x_1 < h) {
+                if(e_y_1 > ex_y_1) {
+                    // Le point quelconque est plus bas que l'extrême 1
+                    a = -staging_a;
+                }
             }
+            else {
+                if(e_y_1 > ex_y_2) {
+                    // Le point quelconque est plus bas que l'extrême 2
+                    a = -staging_a;
+                }
+            }
+        */
+
+        if(k > ex_y_1) {
+            a = -staging_a;
         }
         else {
-            if(e_y_1 > ex_y_2) {
-                // Le point quelconque est plus bas que l'extrême 2
-                a = -staging_a;
-            }
+            a = staging_a;
         }
+        log("a final est " + std::to_string(a));
 
         std::string f;
         f = "f(x) = " + std::to_string(a) + "|" + "x" + " - " + std::to_string(h) + "|" + " + " + std::to_string(k);
@@ -302,5 +328,29 @@ std::string TRFVA() {
 // Trouver la Règle d'une Fonction Exponentielle
 // Forme étudiée en classe : f(x) = a(c)^(bx)
 std::string TRFE() {
+    std::list<std::string> options = { "À partir de l'ordonnée à l'origine et d'un point quelconque" };
+    int option = imprimerOptions(options);
+    if(option == F_R_EXPO_ORD_POINT) {
+        float ord_x;
+        float ord_y;
+        float x;
+        float y;
+        float a;
+        float b;
+        float c;
 
+        std::cout << "Ordonnée à l'origine (x): "; std::cin >> ord_x;
+        std::cout << "Ordonnée à l'origine (y): "; std::cin >> ord_y;
+        std::cout << "Point quelconque (x): "; std::cin >> x;
+        std::cout << "Point quelconque (y): "; std::cin >> y;
+
+        // y = a(c)**x
+        
+    }
+}
+
+void log(std::string message) {
+    if(debug) {
+        std::cout << message << std::endl;
+    }
 }
