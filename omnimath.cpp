@@ -5,6 +5,7 @@
 
 // Options "Trouver la règle d'une fonction"
 #define F_R_VALEUR_ABSOLUE 1
+#define F_R_EXPO 2
 
 // Options "Valeur absolue : options pour trouver la règle"
 #define F_R_VALEUR_ABSOLUE_POINT_SOMMET 1
@@ -21,10 +22,14 @@ int main() {
     std::list<std::string> options = { "Trouver la règle d'une fonction", "" };
     int option = imprimerOptions(options);
     if(option == TROUVER_REGLE_FONCTION) {
-        options = { "Valeur absolue "};
-        imprimerOptions(options);
+        options = { "Valeur absolue ", "Exponentielle" };
+        option = imprimerOptions(options);
         if(option == F_R_VALEUR_ABSOLUE) {
             std::string fn = TRFVA();
+            std::cout << std::endl << "=> " << fn << std::endl;
+        }
+        else if(option == F_R_EXPO) {
+            std::string fn = TRFE();
             std::cout << std::endl << "=> " << fn << std::endl;
         }
     }
@@ -344,8 +349,23 @@ std::string TRFE() {
         std::cout << "Point quelconque (x): "; std::cin >> x;
         std::cout << "Point quelconque (y): "; std::cin >> y;
 
-        // y = a(c)**x
+        // Trouver 'a'
+        a = ord_y;
+        log("a est " + std::to_string(a));
+
+        // Trouver 'c'
+        /*
+            y = a(c)^x
+            y/a = (c)^x
+            (y/a)^(1/x) = c
+        */
+        c = pow((y/a), (1/x));
+        log("c est " + std::to_string(c));
+
+        std::string f;
+        f = "f(x) = " + std::to_string(a) + "(" + std::to_string(c) + ")^x";
         
+        return(f);
     }
 }
 
