@@ -14,6 +14,7 @@
 
 // Options "Exponentielle : options pour trouver la règle"
 #define F_R_EXPO_ORD_POINT 1
+#define F_R_EXPO_2POINTS 2
 
 int main() {
     if(std::getenv("DEBUG") != NULL) {
@@ -333,7 +334,7 @@ std::string TRFVA() {
 // Trouver la Règle d'une Fonction Exponentielle
 // Forme étudiée en classe : f(x) = a(c)^(bx)
 std::string TRFE() {
-    std::list<std::string> options = { "À partir de l'ordonnée à l'origine et d'un point quelconque" };
+    std::list<std::string> options = { "À partir de l'ordonnée à l'origine et d'un point quelconque", "À partir de deux points quelconques" };
     int option = imprimerOptions(options);
     if(option == F_R_EXPO_ORD_POINT) {
         float ord_x;
@@ -341,7 +342,6 @@ std::string TRFE() {
         float x;
         float y;
         float a;
-        float b;
         float c;
 
         std::cout << "Ordonnée à l'origine (x): "; std::cin >> ord_x;
@@ -366,6 +366,59 @@ std::string TRFE() {
         f = "f(x) = " + std::to_string(a) + "(" + std::to_string(c) + ")^x";
         
         return(f);
+    }
+    else if(option == F_R_EXPO_2POINTS) {
+        float x_1;
+        float y_1;
+        float x_2;
+        float y_2;
+        float a;
+        float c;
+
+        std::cout << "Point 1 quelconque (x): "; std::cin >> x_1;
+        std::cout << "Point 1 quelconque (y): "; std::cin >> y_1;
+        std::cout << "Point 2 quelconque (x): "; std::cin >> x_2;
+        std::cout << "Point 2 quelconque (y): "; std::cin >> y_2;
+
+        /*
+            y1 = a(c)^x
+            y2 = a(c)^x
+
+            y_1 = a(c)^x_1
+            y_2 = a(c)^x_2
+
+            (y_1)/((c)^x_1) = a
+            (y_2)/((c)^x_2) = a
+            (y_1)/((c)^x_1) = (y_2)/((c)^x_2)
+
+            ! NE MARCHE PAS !
+            (y_1)*(x_2)*((c)^x_1) = (y_2)*(x_1)*((c)^x_2)
+            (y_1)*(x_2) = ((y_2)*(x_1)*((c)^x_1))/((c)^x_2)
+            (y_1)*(x_2) = ((y_2)*(x_1)*((c)^(x_1-x_2)))
+            (((y_1)*(x_2))/((y_2)*(x_1)))^(1/(x_1-x_2)) = (c)^(x_1-x_2) = c
+            ! NE MARCHE PAS !
+
+            // MARCHE
+            ((c)^x_1)/((c)^x_2) = (y_2)/(y_1)
+            (c)^(x_1-x_2) = (y_2)/(y_1)
+        */
+
+        // Trouver 'c'
+        c = pow((y_1/y_2), (1/(x_1-x_2)));
+        log("c est " + std::to_string(c));
+
+        // Trouver 'a'
+        /*
+            y_1 = a(c)^x_1
+            y_1/((c)^x_1) = a
+        */
+        a = y_1/(pow(c, x_1));
+        log("a est " + std::to_string(a));
+
+        std::string f;
+        f = "f(x) = " + std::to_string(a) + "(" + std::to_string(c) + ")^x";
+
+       return(f);
     }
 }
 
