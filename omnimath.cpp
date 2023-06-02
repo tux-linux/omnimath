@@ -6,6 +6,7 @@
 // Options "Trouver la règle d'une fonction"
 #define F_R_VALEUR_ABSOLUE 1
 #define F_R_EXPO 2
+#define F_R_LOG 3
 
 // Options "Valeur absolue : options pour trouver la règle"
 #define F_R_VALEUR_ABSOLUE_POINT_SOMMET 1
@@ -16,14 +17,19 @@
 #define F_R_EXPO_ORD_POINT 1
 #define F_R_EXPO_2POINTS 2
 
+// Options "Logarithmique : options pour trouver la règle"
+#define F_R_LOG_B_C_POINT 1
+#define F_R_LOG_A_C_POINT 2
+#define F_R_LOG_A_2POINTS 3
+
 int main() {
     if(std::getenv("DEBUG") != NULL) {
         debug = true;
     };
-    std::list<std::string> options = { "Trouver la règle d'une fonction", "" };
+    std::list<std::string> options = { "Trouver la règle d'une fonction" };
     int option = imprimerOptions(options);
     if(option == TROUVER_REGLE_FONCTION) {
-        options = { "Valeur absolue ", "Exponentielle" };
+        options = { "Valeur absolue ", "Exponentielle", "Logarithmique" };
         option = imprimerOptions(options);
         if(option == F_R_VALEUR_ABSOLUE) {
             std::string fn = TRFVA();
@@ -31,6 +37,10 @@ int main() {
         }
         else if(option == F_R_EXPO) {
             std::string fn = TRFE();
+            std::cout << std::endl << "=> " << fn << std::endl;
+        }
+        else if(option == F_R_LOG) {
+            std::string fn = TRFL();
             std::cout << std::endl << "=> " << fn << std::endl;
         }
     }
@@ -419,6 +429,112 @@ std::string TRFE() {
         f = "f(x) = " + std::to_string(a) + "(" + std::to_string(c) + ")^x";
 
        return(f);
+    }
+}
+
+// Trouver la Règle d'une Fonction Logarithmique
+std::string TRFL() {
+    std::list<std::string> options = { "À partir des paramètres 'b', 'c' et un point", "À partir des paramètres 'a', 'c' et un point", "À partir du paramètre 'a' et deux points" };
+    int option = imprimerOptions(options);
+    if(option == F_R_LOG_B_C_POINT) {
+        float x;
+        float y;
+        float a;
+        float b;
+        float c;
+
+        std::cout << "Point 1 quelconque (x): "; std::cin >> x;
+        std::cout << "Point 1 quelconque (y): "; std::cin >> y;
+        std::cout << "Paramètre 'b': "; std::cin >> b;
+        std::cout << "Paramètre 'c': "; std::cin >> c;
+        
+        // Trouver 'a'
+        /*
+            y = a((log10(b(x)))/(log10(c)))
+            y/((log10(b(x)))/(log10(c))) = a
+        */
+        a = y/((log10(b*x))/(log10(c)));
+        log("a est " + std::to_string(a));
+
+        std::string f;
+        f = "f(x) = " + std::to_string(a) + " log10(" + std::to_string(b) + "(x))/log10(" + std::to_string(c) + ")";
+
+        return(f);
+    }
+    else if(option == F_R_LOG_A_C_POINT) {
+        float x;
+        float y;
+        float a;
+        float b;
+        float c;
+
+        std::cout << "Point 1 quelconque (x): "; std::cin >> x;
+        std::cout << "Point 1 quelconque (y): "; std::cin >> y;
+        std::cout << "Paramètre 'a': "; std::cin >> a;
+        std::cout << "Paramètre 'c': "; std::cin >> c;
+
+        // Trouver 'b'
+        /*
+            y = a((log10(b(x)))/(log10(c)))
+            y/a = (log10(b(x)))/(log10(c))
+            c^(y/a) = b(x)
+            (c^(y/a))/(x) = b
+        */
+        b = (pow(c, y/a))/x;
+        log("b est " + std::to_string(b));
+
+        std::string f;
+        f = "f(x) = " + std::to_string(a) + " log10(" + std::to_string(b) + "(x))/log10(" + std::to_string(c) + ")";
+
+        return(f);
+    }
+    else if(option == F_R_LOG_A_2POINTS) {
+        float x_1;
+        float y_1;
+        float x_2;
+        float y_2;
+        float a;
+        float b;
+        float c;
+
+        std::cout << "Point 1 quelconque (x): "; std::cin >> x_1;
+        std::cout << "Point 1 quelconque (y): "; std::cin >> y_1;
+        std::cout << "Point 2 quelconque (x): "; std::cin >> x_2;
+        std::cout << "Point 2 quelconque (y): "; std::cin >> y_2;
+        std::cout << "Paramètre 'a': "; std::cin >> a;
+
+        // Trouver 'c'
+        /*
+            y = a((log10(b(x)))/(log10(c)))
+
+            y_1 = a((log10(b(x_1)))/(log10(c)))
+            y_2 = a((log10(b(x_2)))/(log10(c)))
+
+            y_1/a = (log10(b(x_1)))/(log10(c))
+            y_2/a = (log10(b(x_2)))/(log10(c))
+
+            c^(y_1/a) = b(x_1)
+            c^(y_2/a) = b(x_2)
+
+            c^(y_1/a)/(x_1) = b
+            c^(y_2/a)/(x_2) = b
+
+            c^(y_1/a)/(x_1) = c^(y_2/a)/(x_2)
+            (x_2)/(x_1) = c^(y_2/a)/c^(y_1/a)
+            (x_2)/(x_1) = c^((y_2/a)-(y_1/a))
+            ((x_2)/(x_1))^(1/((y_2/a)-(y_1/a))) = c
+        */
+        c = pow((x_2/x_1), 1/((y_2/a)-(y_1/a)));
+        log("c est " + std::to_string(c));
+
+        // Trouver 'b'
+        b = pow(c, y_1/a)/x_1;
+        log("b est " + std::to_string(b));
+
+        std::string f;
+        f = "f(x) = " + std::to_string(a) + " log10(" + std::to_string(b) + "(x))/log10(" + std::to_string(c) + ")";
+
+        return(f);
     }
 }
 
