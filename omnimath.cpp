@@ -2,6 +2,7 @@
 
 // Options générales
 #define TROUVER_REGLE_FONCTION 1
+#define FACTORISER 2
 
 // Options "Trouver la règle d'une fonction"
 #define F_R_VALEUR_ABSOLUE 1
@@ -22,11 +23,14 @@
 #define F_R_LOG_A_C_POINT 2
 #define F_R_LOG_A_2POINTS 3
 
+// Options "Factoriser"
+#define FAC_DEGRE_TROIS 1
+
 int main() {
     if(std::getenv("DEBUG") != NULL) {
         debug = true;
     };
-    std::list<std::string> options = { "Trouver la règle d'une fonction" };
+    std::list<std::string> options = { "Trouver la règle d'une fonction", "Factoriser" };
     int option = imprimerOptions(options);
     if(option == TROUVER_REGLE_FONCTION) {
         options = { "Valeur absolue ", "Exponentielle", "Logarithmique" };
@@ -42,6 +46,14 @@ int main() {
         else if(option == F_R_LOG) {
             std::string fn = TRFL();
             std::cout << std::endl << "=> " << fn << std::endl;
+        }
+    }
+    else if(option == FACTORISER) {
+        std::list<std::string> options = { "Factoriser un polynôme de degré trois" };
+        int option = imprimerOptions(options);
+        if(option == FAC_DEGRE_TROIS) {
+            std::string res = FPDT();
+            std::cout << std::endl << "=> " << res << std::endl;
         }
     }
 }
@@ -410,7 +422,7 @@ std::string TRFE() {
 
             // MARCHE
             ((c)^x_1)/((c)^x_2) = (y_2)/(y_1)
-            (c)^(x_1-x_2) = (y_2)/(y_1)
+            (c)^(x_1-x_2) = (y_1)/(y_2)
         */
 
         // Trouver 'c'
@@ -536,6 +548,120 @@ std::string TRFL() {
 
         return(f);
     }
+}
+
+// Factoriser un Polynôme de Degré Trois
+// Forme étudiée: nx^3 - nx^2 - nx + n
+std::string FPDT() {
+    int cx3;
+    int cx2;
+    int cx;
+    int n;
+    int zero;
+    std::vector<int> facteurs_n;
+
+    std::cout << "Coefficient de la variable élevée au degré trois: "; std::cin >> cx3;
+    std::cout << "Coefficient de la variable élevée au degré deux: "; std::cin >> cx2;
+    std::cout << "Coefficient de la variable au premier degré: "; std::cin >> cx;
+    std::cout << "Constante: "; std::cin >> n;
+
+    // Recherche des facteurs de 'n'
+    for(int i = 1; i <= n; i++) {
+        if(n % i == 0) {
+            facteurs_n.push_back(i);
+        }
+    }
+    log("Facteurs de n: ");
+    for(int i = 1; i <= facteurs_n.size(); i++) {
+        if(debug) {
+            std::cout << facteurs_n.at(i - 1) << " ";
+        }
+    }
+    if(debug) {
+        std::cout << std::endl;
+    }
+
+    // Recherche d'un zéro
+    for(int i = 1; i <= facteurs_n.size(); i++) {
+        int test = facteurs_n.at(i - 1);
+        int resPos = (cx3 * pow(test, 3)) + (cx2 * pow(test, 2)) + (cx * test) + n;
+        int resNeg = (cx3 * pow(-test, 3)) + (cx2 * pow(-test, 2)) + (cx * -test) + n;
+        if(resPos == 0) {
+            log("Le facteur " + std::to_string(test) + " est un zéro de l'équation");
+            zero = test;
+            break;
+        }
+        else if(resNeg == 0) {
+            log("Le facteur " + std::to_string(-test) + " est un zéro de l'équation");
+            zero = -test;
+            break;
+        }
+        // Arrêter la recherche de zéros lorsqu'on en a trouvé un
+    }
+
+    // Division de l'expression par x - c (c = le zéro) étape par étape. * Il y a seulement deux termes au dénominateur dans le cas étudié: x - c *
+    int res_x2 = 0;
+    int res_x = 0;
+    int res_n = 0;
+
+    // On suppose qu'il n'y aura pas de reste : tout ce qui est dans l'équation en résolution peut contenir au plus quatre données qui évoluent
+    int s1_cx3 = cx3;
+    int s1_cx2 = cx2;
+    int s1_cx = cx;
+    int s1_n = n;
+    int s2_cx3 = 0;
+    int s2_cx2 = 0;
+    int s2_cx = 0;
+    int s2_n = 0;
+    int etape = 0;
+
+    while(true) {
+        log("==== ÉTAPE " + std::to_string(etape) + " ====");
+        log("s1_cx3 " + std::to_string(s1_cx3) + " s1_cx2 " + std::to_string(s1_cx2) + " s1_cx " + std::to_string(s1_cx) + " s1_n " + std::to_string(s1_n));
+        if(s1_cx3 == 0 && s1_cx2 == 0 && s1_cx == 0 && s1_n == 0) {
+            break;
+        }
+
+        // Étape 1
+        if(res_x2 == 0) {
+            // Combien de fois x entre dans s1_cx3 * x^3 ?
+            res_x2 = (int)(s1_cx3 / 1);
+            s2_cx3 = s1_cx3 - (res_x2 * 1);
+            // -zero car x - c
+            s2_cx2 = s1_cx2 - (res_x2 * -zero);
+
+            s1_cx3 = s2_cx3;
+            s1_cx2 = s2_cx2;
+        }
+        // Étape 2
+        else if(res_x == 0) {
+            // Combien de fois x entre dans s1_cx2 * x^2 ?
+            res_x = (int)(s1_cx2 / 1);
+            s2_cx2 = s1_cx2 - (res_x * 1);
+            // -zero car x - c
+            s2_cx = s1_cx - (res_x * -zero);
+
+            s1_cx2 = s2_cx2;
+            s1_cx = s2_cx;
+        }
+        // Étape 3
+        else if(res_n == 0) {
+            res_n = (int)(s1_cx / 1);
+            s2_cx = s1_cx - (res_n * 1);
+            // -zero car x - c
+            s2_n = s1_n - (res_n * -zero);
+
+            s1_cx = s2_cx;
+            s1_n = s2_n;
+        }
+
+        etape++;
+    }
+
+    std::string r;
+    r = "Résultat de la division : (x - " + std::to_string(zero) + ")(" + std::to_string(res_x2) + "x^2 + " + std::to_string(res_x) + "x + " + std::to_string(res_n) + ")";
+
+    return(r);
 }
 
 void log(std::string message) {
